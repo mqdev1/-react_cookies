@@ -1,123 +1,118 @@
-const setCookie = (props) => {
-  const Empty = [undefined, null, ""];
+import { useState, useEffect } from 'react';
 
-  if (Empty.indexOf(props.name) > -1) {
-    console.error("property 'name' is undefined");
+/**
+ * ReactCookie.js 
+ * مكتبة لإدارة الكوكيز عبر LocalStorage مع دعم المزامنة التلقائية
+ */
+
+// التحقق من القيم الفارغة
+const isEmpty = (val) => [undefined, null, ""].indexOf(val) > -1;
+
+// --- الوظائف الأساسية ---
+
+export const setCookie = (props) => {
+  const { name, value, time = 60 } = props;
+
+  if (isEmpty(name) || isEmpty(value)) {
+    console.error("ReactCookie: 'name' and 'value' are required.");
     return;
   }
-  if (Empty.indexOf(props.value) > -1) {
-    console.error("property 'value' is undefined");
-    return;
-  }
-  if (Empty.indexOf(props.time) > -1) {
-    console.error("property 'time' is undefined");
-    return;
-  }
 
-  // get Cookie time
-  // time per seccound
-  // 60 is one minute
-  const time = props.time || 60;
+  const allLocals = JSON.parse(localStorage.getItem("AllLocals") || "[]");
+  const cookieIndex = allLocals.findIndex(c => c.loc_name === name);
 
-  // get cookie name
-  const name = props.name || "";
+  const newEntry = {
+    loc_name: name,
+    loc_value: value,
+    loc_time: time,
+    loc_created_date: new Date().toISOString(),
+  };
 
-  // get cookie value
-  const value = props.value || "";
-
-  const AllOfLocals = localStorage.getItem("AllLocals");
-  if (AllOfLocals === null) {
-    const localItem = {
-      loc_name: name,
-      loc_time: time,
-      loc_value: value,
-    };
-    localStorage.setItem("AllLocals", JSON.stringify(localItem));
+  if (cookieIndex > -1) {
+    allLocals[cookieIndex] = newEntry;
   } else {
-    const AllOfLocalsOld = Array.from(JSON.parse(AllOfLocals));
-    // update old cookie like name
-    const cok_item = AllOfLocalsOld.filter((a) => a.loc_name === props.name);
-    const localItem = {
-      loc_name: name,
-      loc_time: time,
-      loc_value: value,
-      loc_created_date: new Date(),
-    };
-    if (cok_item.length > 0) {
-      cok_item[0].loc_value = value;
-      cok_item[0].loc_time = time;
-    } else {
-      AllOfLocalsOld.push(localItem);
-    }
-    localStorage.setItem("AllLocals", JSON.stringify(AllOfLocalsOld));
+    allLocals.push(newEntry);
   }
+
+  localStorage.setItem("AllLocals", JSON.stringify(allLocals));
+  
+  // إطلاق حدث يدوي لتنبيه التبويب الحالي بالتغيير
+  window.dispatchEvent(new Event("storage_update"));
 };
 
-const getCookie = (props) => {
-  const Empty = [undefined, null, ""];
-  const AllOfLocals = localStorage.getItem("AllLocals");
-  if (null === AllOfLocals) return null;
-  if (Empty.indexOf(props.name) > -1) return null;
-  const cookies = Array.from(JSON.parse(AllOfLocals));
-  const cokie = cookies.filter((a) => a.loc_name === props.name);
-  if (cokie.length > 0) {
-    const nowDate = new Date();
-    const currDate = new Date(cokie[0].loc_created_date);
-    nowDate.setSeconds(nowDate.getSeconds() + parseInt(cokie[0].loc_time));
-    if (nowDate > currDate) {
-      console.log({
-        ...cokie[0],
-        finsh_date : nowDate
-      });
-      return cokie[0].loc_value;
+export const getCookie = (name) => {
+  if (isEmpty(name)) return null;
+
+  const allLocals = JSON.parse(localStorage.getItem("AllLocals") || "[]");
+  const cookie = allLocals.find(c => c.loc_name === name);
+
+  if (cookie) {
+    const expiryDate = new Date(cookie.loc_created_date);
+    expiryDate.setSeconds(expiryDate.getSeconds() + parseInt(cookie.loc_time));
+
+    // إذا كان الوقت الحالي أصغر من وقت الانتهاء، الكوكي صالحة
+    if (new Date() < expiryDate) {
+      return cookie.loc_value;
     } else {
+      delCookie({ name }); // حذف تلقائي إذا انتهت الصلاحية
       return null;
     }
-  } else {
-    return null;
   }
+  return null;
 };
 
-const delCookie = (props) => {
-  const Empty = [undefined, null, ""];
-  const AllOfLocals = localStorage.getItem("AllLocals");
-  if (null === AllOfLocals) return null;
-  if (Empty.indexOf(props.name) > -1) return null;
-  const cookies = Array.from(JSON.parse(AllOfLocals));
-  const myCok = cookies.filter((a) => a.loc_name === props.name);
-  const newCookiesList = [];
-  cookies.forEach((co) => {
-    if (co.loc_name !== myCok[0].loc_name) {
-      newCookiesList.push(co);
-    }
-  });
-  localStorage.setItem("AllLocals", JSON.stringify(newCookiesList));
+export const delCookie = (props) => {
+  if (isEmpty(props.name)) return;
+
+  const allLocals = JSON.parse(localStorage.getItem("AllLocals") || "[]");
+  const filtered = allLocals.filter(c => c.loc_name !== props.name);
+  
+  localStorage.setItem("AllLocals", JSON.stringify(filtered));
+  window.dispatchEvent(new Event("storage_update"));
 };
 
-const listCookies = () => {
-  const AllOfLocals = localStorage.getItem("AllLocals");
-  if (null === AllOfLocals) return [];
-  const cookies = Array.from(JSON.parse(AllOfLocals));
-  const l = [];
-  cookies.forEach((n) => {
-    const nowDate = new Date();
-    const currDate = new Date(n.loc_created_date);
-    nowDate.setSeconds(nowDate.getSeconds() + parseInt(n.loc_time));
-    if (nowDate > currDate) {
-      l.push({
-        name: n.loc_name,
-        value: n.loc_value,
-        time: n.loc_time,
+export const listCookies = () => {
+  const allLocals = JSON.parse(localStorage.getItem("AllLocals") || "[]");
+  const validCookies = [];
+
+  allLocals.forEach(c => {
+    const val = getCookie(c.loc_name);
+    if (val) {
+      validCookies.push({
+        name: c.loc_name,
+        value: c.loc_value,
+        time: c.loc_time
       });
-    } else {
-      delCookie({ name: n.loc_name });
     }
   });
-  return l;
+  return validCookies;
 };
 
-const ClearCookies = () => {
+export const ClearCookies = () => {
   localStorage.setItem("AllLocals", JSON.stringify([]));
+  window.dispatchEvent(new Event("storage_update"));
 };
 
-export { listCookies, setCookie, getCookie, delCookie, ClearCookies };
+// --- React Hook للمزامنة التلقائية ---
+
+export const useSyncCookie = (cookieName) => {
+  const [value, setValue] = useState(() => getCookie(cookieName));
+
+  useEffect(() => {
+    const updateState = () => {
+      setValue(getCookie(cookieName));
+    };
+
+    // الاستماع لتغييرات التبويبات الأخرى
+    window.addEventListener("storage", updateState);
+    // الاستماع لتغييرات التبويب الحالي
+    window.addEventListener("storage_update", updateState);
+
+    return () => {
+      window.removeEventListener("storage", updateState);
+      window.removeEventListener("storage_update", updateState);
+    };
+  }, [cookieName]);
+
+  return value;
+};
