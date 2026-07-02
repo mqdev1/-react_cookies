@@ -1,70 +1,255 @@
-# Getting Started with Create React App
+# 🍪 React-Cookies
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+مكتبة خفيفة وقوية لإدارة الكوكيز في تطبيقات React باستخدام `localStorage` مع دعم المزامنة التلقائية بين التبويبات.
 
-## Available Scripts
+## 📦 التثبيت
 
-In the project directory, you can run:
+```bash
+npm install react-cookies
+# أو
+yarn add react-cookies
+```
 
-### `npm start`
+## ✨ المميزات
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- ✅ **مزامنة تلقائية** بين جميع تبويبات المتصفح
+- ✅ **صلاحية زمنية** للبيانات (انتهاء تلقائي)
+- ✅ **واجهة بسيطة** وسهلة الاستخدام
+- ✅ **حجم صغير** ولا يحتوي على تبعيات خارجية
+- ✅ **مكتوب بـ TypeScript** (دعم كامل للأنواع)
+- ✅ **مثالي** لتخزين تفضيلات المستخدم، حالة الجلسة، والإعدادات
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 البدء السريع
 
-### `npm test`
+### 1️⃣ إعداد الكوكيز
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```javascript
+import { setCookie, getCookie, ClearCookies } from 'react-cookies';
 
-### `npm run build`
+// حفظ كوكي
+setCookie({
+  name: 'username',
+  value: 'أحمد',
+  time: 3600 // ثانية (ساعة واحدة)
+});
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+// قراءة كوكي
+const user = getCookie('username');
+console.log(user); // 'أحمد'
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+// مسح جميع الكوكيز
+ClearCookies();
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2️⃣ استخدام الـ Hook للمزامنة التلقائية
 
-### `npm run eject`
+```javascript
+import React from 'react';
+import { useSyncCookie, setCookie } from 'react-cookies';
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+function UserProfile() {
+  // المزامنة التلقائية مع التغييرات
+  const username = useSyncCookie('username');
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  const handleLogin = () => {
+    setCookie({
+      name: 'username',
+      value: 'سارة',
+      time: 7200 // ساعتين
+    });
+  };
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  return (
+    <div>
+      <h1>مرحباً {username || 'زائر'}</h1>
+      <button onClick={handleLogin}>تسجيل الدخول</button>
+    </div>
+  );
+}
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📚 الـ API كاملاً
 
-## Learn More
+### `setCookie({ name, value, time })`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+يضيف أو يحدّث كوكي جديد.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+| المعامل | النوع | إلزامي | الوصف |
+|---------|------|--------|-------|
+| `name` | `string` | ✅ نعم | اسم الكوكي |
+| `value` | `any` | ✅ نعم | قيمة الكوكي (يمكن أن تكون كائن) |
+| `time` | `number` | ❌ لا | مدة الصلاحية **بالثواني** (الافتراضي: 60) |
 
-### Code Splitting
+```javascript
+setCookie({
+  name: 'theme',
+  value: 'dark',
+  time: 86400 // يوم كامل
+});
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+### `getCookie(name)`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+يسترجع قيمة الكوكي إذا كان صالحاً، وإلا يعيد `null`.
 
-### Making a Progressive Web App
+```javascript
+const token = getCookie('auth_token');
+if (token) {
+  // الكوكي موجود وصالح
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+### `delCookie({ name })`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+يحذف كوكي محدد.
 
-### Deployment
+```javascript
+delCookie({ name: 'session_id' });
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+### `listCookies()`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+يسترجع قائمة بجميع الكوكيز الصالحة.
+
+```javascript
+const allCookies = listCookies();
+console.log(allCookies);
+/*
+[
+  { name: 'username', value: 'أحمد', time: 3600 },
+  { name: 'theme', value: 'dark', time: 86400 }
+]
+*/
+```
+
+---
+
+### `ClearCookies()`
+
+يحذف **جميع** الكوكيز المخزنة.
+
+```javascript
+ClearCookies(); // مسح شامل
+```
+
+---
+
+### `useSyncCookie(cookieName)`
+
+**Hook** للمزامنة التلقائية مع تغييرات الكوكيز في أي تبويب.
+
+```javascript
+const value = useSyncCookie('username');
+```
+
+**كيف يعمل؟**
+- ✅ يتحدّث تلقائياً عند تغيير الكوكي
+- ✅ يستجيب للتغييرات من أي تبويب آخر
+- ✅ يُنظف الاستماع تلقائياً عند فك تركيب المكون
+
+## 💡 أمثلة عملية
+
+### مثال 1: نظام المصادقة البسيط
+
+```javascript
+function AuthSystem() {
+  const [user, setUser] = useState(null);
+  const isLoggedIn = useSyncCookie('isLoggedIn');
+
+  useEffect(() => {
+    if (isLoggedIn === 'true') {
+      const userData = getCookie('userData');
+      setUser(JSON.parse(userData));
+    }
+  }, [isLoggedIn]);
+
+  const login = (userInfo) => {
+    setCookie({
+      name: 'isLoggedIn',
+      value: 'true',
+      time: 3600
+    });
+    setCookie({
+      name: 'userData',
+      value: JSON.stringify(userInfo),
+      time: 3600
+    });
+  };
+
+  const logout = () => {
+    delCookie({ name: 'isLoggedIn' });
+    delCookie({ name: 'userData' });
+    setUser(null);
+  };
+
+  // ... باقي الكود
+}
+```
+
+### مثال 2: تفضيلات المستخدم
+
+```javascript
+function ThemeSwitcher() {
+  const theme = useSyncCookie('theme');
+
+  const changeTheme = (newTheme) => {
+    setCookie({
+      name: 'theme',
+      value: newTheme,
+      time: 2592000 // 30 يوماً
+    });
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  return (
+    <button onClick={() => changeTheme('dark')}>
+      الوضع الحالي: {theme || 'فاتح'}
+    </button>
+  );
+}
+```
+
+## ⚙️ آلية العمل الداخلية
+
+1. **التخزين**: جميع الكوكيز تُخزن في `localStorage` داخل مفتاح واحد `AllLocals`.
+2. **الصلاحية**: يتم التحقق من انتهاء الصلاحية عند كل قراءة باستخدام `getCookie`.
+3. **المزامنة**: تستخدم الأحداث المخصصة `storage_update` و `storage` للتحديث الفوري.
+
+## 📊 مقارنة مع التخزين التقليدي
+
+| الميزة | React-Cookies | Cookies | localStorage |
+|--------|---------------|---------|--------------|
+| صلاحية زمنية | ✅ | ✅ | ❌ |
+| مزامنة بين التبويبات | ✅ | ✅ | ❌ |
+| سعة التخزين | ~5MB | ~4KB | ~5MB |
+| آمن للـ XSS | ✅ | ⚠️ | ✅ |
+
+## 🤝 المساهمة
+
+المكتبة مفتوحة المصدر! نرحب بمساهماتكم:
+
+1. Fork المشروع
+2. أنشئ فرعاً جديداً (`git checkout -b feature/amazing-feature`)
+3. أضف تغييراتك (`git commit -m 'Add some amazing feature'`)
+4. ادفع التغييرات (`git push origin feature/amazing-feature`)
+5. افتح Pull Request
+
+## 📝 الترخيص
+
+هذا المشروع مرخص تحت [MIT License](LICENSE).
+
+---
+
+**صنع بـ ❤️ بواسطة [mqdev1](https://github.com/mqdev1)**
+
+---
+
+### ⭐ دعم المشروع
+
+إذا أعجبتك المكتبة، لا تنسى إعطائها نجمة ⭐ على GitHub!
