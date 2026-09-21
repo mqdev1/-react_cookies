@@ -1,255 +1,510 @@
 # 🍪 React-Cookies
 
+<div align="center">
+
 مكتبة خفيفة وقوية لإدارة الكوكيز في تطبيقات React باستخدام `localStorage` مع دعم المزامنة التلقائية بين التبويبات.
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://react.dev/)
+[![npm](https://img.shields.io/badge/npm-v1.0.0-red.svg)](https://www.npmjs.com/)
+
+</div>
+
+---
+
+## 🎯 لماذا React-Cookies؟
+
+تخزين التفضيلات في `localStorage` مباشرة عملية فوضوية:
+
+```javascript
+// ❌ بدون React-Cookies
+localStorage.setItem("theme", "dark");
+const theme = localStorage.getItem("theme"); // string فقط
+// لا expiry، لا sync، لا types
+```
+
+**مع React-Cookies:**
+
+```javascript
+// ✅ مع React-Cookies
+setCookie({ name: "theme", value: "dark", time: 86400 });
+const theme = getCookie("theme"); // أي نوع
+// expiry تلقائي + مزامنة بين التبويبات + TypeScript
+```
+
+---
+
+## ✨ المميزات
+
+| الميزة | التفاصيل |
+|--------|---------|
+| 🔄 **مزامنة تلقائية** | بين جميع تبويبات المتصفح |
+| ⏱️ **صلاحية زمنية** | انتهاء تلقائي بعد مدة محددة |
+| 🎯 **واجهة بسيطة** | 6 دوال فقط |
+| 📦 **حجم صغير** | ~1KB مضغوط |
+| 💪 **TypeScript كامل** | دعم كامل للأنواع |
+| 🛡️ **آمن من الأخطاء** | معالجة quota + JSON معطوب |
+| 🎨 **React Hook** | `useSyncCookie` للمزامنة السلسة |
+| 🧹 **تنظيف تلقائي** | حذف الكوكيز المنتهية |
+
+---
 
 ## 📦 التثبيت
 
 ```bash
-npm install react-cookies
+npm install @mqdev1/react-cookies
 # أو
-yarn add react-cookies
+yarn add @mqdev1/react-cookies
+# أو
+pnpm add @mqdev1/react-cookies
 ```
 
-## ✨ المميزات
+**ملاحظة:** المكتبة موجودة حالياً كملف داخل `src/lib/`. لأخذها من GitHub:
 
-- ✅ **مزامنة تلقائية** بين جميع تبويبات المتصفح
-- ✅ **صلاحية زمنية** للبيانات (انتهاء تلقائي)
-- ✅ **واجهة بسيطة** وسهلة الاستخدام
-- ✅ **حجم صغير** ولا يحتوي على تبعيات خارجية
-- ✅ **مكتوب بـ TypeScript** (دعم كامل للأنواع)
-- ✅ **مثالي** لتخزين تفضيلات المستخدم، حالة الجلسة، والإعدادات
+```bash
+npm install mqdev1/-react_cookies
+```
+
+---
 
 ## 🚀 البدء السريع
 
-### 1️⃣ إعداد الكوكيز
+### 1️⃣ حفظ وقراءة كوكي
 
-```javascript
-import { setCookie, getCookie, ClearCookies } from 'react-cookies';
+```typescript
+import { setCookie, getCookie, ClearCookies } from "react-cookies";
 
-// حفظ كوكي
+// ✅ حفظ كوكي (ساعة واحدة)
 setCookie({
-  name: 'username',
-  value: 'أحمد',
-  time: 3600 // ثانية (ساعة واحدة)
+    name: "username",
+    value: "أحمد",
+    time: 3600,
 });
 
-// قراءة كوكي
-const user = getCookie('username');
+// ✅ قراءة كوكي
+const user = getCookie<string>("username");
 console.log(user); // 'أحمد'
 
-// مسح جميع الكوكيز
+// ✅ مسح جميع الكوكيز
 ClearCookies();
 ```
 
-### 2️⃣ استخدام الـ Hook للمزامنة التلقائية
+### 2️⃣ استخدام Hook للمزامنة
 
-```javascript
-import React from 'react';
-import { useSyncCookie, setCookie } from 'react-cookies';
+```tsx
+import { useSyncCookie, setCookie } from "react-cookies";
 
 function UserProfile() {
-  // المزامنة التلقائية مع التغييرات
-  const username = useSyncCookie('username');
+    // 🔄 مزامنة تلقائية مع التغييرات من أي تبويب
+    const username = useSyncCookie<string>("username");
 
-  const handleLogin = () => {
-    setCookie({
-      name: 'username',
-      value: 'سارة',
-      time: 7200 // ساعتين
-    });
-  };
+    const handleLogin = () => {
+        setCookie({
+            name: "username",
+            value: "سارة",
+            time: 7200, // ساعتين
+        });
+    };
 
-  return (
-    <div>
-      <h1>مرحباً {username || 'زائر'}</h1>
-      <button onClick={handleLogin}>تسجيل الدخول</button>
-    </div>
-  );
+    return (
+        <div>
+            <h1>مرحباً {username || "زائر"}</h1>
+            <button onClick={handleLogin}>تسجيل الدخول</button>
+        </div>
+    );
 }
 ```
 
-## 📚 الـ API كاملاً
+---
 
-### `setCookie({ name, value, time })`
+## 📚 API كامل
 
-يضيف أو يحدّث كوكي جديد.
+### `setCookie(options)`
 
-| المعامل | النوع | إلزامي | الوصف |
-|---------|------|--------|-------|
-| `name` | `string` | ✅ نعم | اسم الكوكي |
-| `value` | `any` | ✅ نعم | قيمة الكوكي (يمكن أن تكون كائن) |
-| `time` | `number` | ❌ لا | مدة الصلاحية **بالثواني** (الافتراضي: 60) |
+حفظ أو تحديث كوكي.
 
-```javascript
+```typescript
+interface SetCookieOptions {
+    name: string;
+    value: any;
+    time?: number; // بالثواني (افتراضي: 60)
+}
+
 setCookie({
-  name: 'theme',
-  value: 'dark',
-  time: 86400 // يوم كامل
+    name: "theme",
+    value: "dark",
+    time: 86400, // يوم
 });
 ```
 
 ---
 
-### `getCookie(name)`
+### `getCookie<T>(name)`
 
-يسترجع قيمة الكوكي إذا كان صالحاً، وإلا يعيد `null`.
+قراءة كوكي مع دعم الـ Generic Types.
 
-```javascript
-const token = getCookie('auth_token');
-if (token) {
-  // الكوكي موجود وصالح
+```typescript
+// ✅ قراءة string
+const name = getCookie<string>("username");
+
+// ✅ قراءة object
+interface UserPrefs {
+    theme: string;
+    fontSize: number;
 }
+const prefs = getCookie<UserPrefs>("prefs");
+console.log(prefs?.theme); // "dark"
+
+// ✅ مع قيمة افتراضية
+const theme = getCookie<string>("theme") ?? "light";
 ```
 
 ---
 
 ### `delCookie({ name })`
 
-يحذف كوكي محدد.
+حذف كوكي محدد.
 
-```javascript
-delCookie({ name: 'session_id' });
+```typescript
+delCookie({ name: "session_id" });
 ```
 
 ---
 
 ### `listCookies()`
 
-يسترجع قائمة بجميع الكوكيز الصالحة.
+قائمة بجميع الكوكيز الصالحة.
 
-```javascript
-const allCookies = listCookies();
-console.log(allCookies);
-/*
-[
-  { name: 'username', value: 'أحمد', time: 3600 },
-  { name: 'theme', value: 'dark', time: 86400 }
-]
-*/
+```typescript
+const all = listCookies();
+all.forEach((c) => {
+    console.log(`${c.name} → ${c.value}`);
+    console.log(`expires at: ${c.expires_at}`);
+});
+```
+
+**Return Type:**
+
+```typescript
+interface CookieListItem {
+    name: string;
+    value: any;
+    time: number;
+    created_at: Date;
+    expires_at: Date;
+}
 ```
 
 ---
 
 ### `ClearCookies()`
 
-يحذف **جميع** الكوكيز المخزنة.
+حذف **جميع** الكوكيز.
 
-```javascript
-ClearCookies(); // مسح شامل
+```typescript
+ClearCookies();
 ```
 
 ---
 
-### `useSyncCookie(cookieName)`
+### `purgeExpired()`
 
-**Hook** للمزامنة التلقائية مع تغييرات الكوكيز في أي تبويب.
+تنظيف يدوي للكوكيز المنتهية.
 
-```javascript
-const value = useSyncCookie('username');
+```typescript
+const removed = purgeExpired();
+console.log(`تم حذف ${removed} كوكي منتهي`);
+```
+
+---
+
+### `useSyncCookie<T>(cookieName)`
+
+Hook للمزامنة التلقائية.
+
+```typescript
+const value = useSyncCookie<number>("counter");
 ```
 
 **كيف يعمل؟**
-- ✅ يتحدّث تلقائياً عند تغيير الكوكي
-- ✅ يستجيب للتغييرات من أي تبويب آخر
-- ✅ يُنظف الاستماع تلقائياً عند فك تركيب المكون
+
+- ✅ يتحدّث عند تغيير الكوكي
+- ✅ يستجيب للتغييرات من أي تبويب
+- ✅ ينظف المستمعين تلقائياً
+- ✅ SSR-safe (`typeof window` checks)
+
+---
 
 ## 💡 أمثلة عملية
 
-### مثال 1: نظام المصادقة البسيط
+### 🎨 مثال 1: تبديل الثيم
 
-```javascript
-function AuthSystem() {
-  const [user, setUser] = useState(null);
-  const isLoggedIn = useSyncCookie('isLoggedIn');
-
-  useEffect(() => {
-    if (isLoggedIn === 'true') {
-      const userData = getCookie('userData');
-      setUser(JSON.parse(userData));
-    }
-  }, [isLoggedIn]);
-
-  const login = (userInfo) => {
-    setCookie({
-      name: 'isLoggedIn',
-      value: 'true',
-      time: 3600
-    });
-    setCookie({
-      name: 'userData',
-      value: JSON.stringify(userInfo),
-      time: 3600
-    });
-  };
-
-  const logout = () => {
-    delCookie({ name: 'isLoggedIn' });
-    delCookie({ name: 'userData' });
-    setUser(null);
-  };
-
-  // ... باقي الكود
-}
-```
-
-### مثال 2: تفضيلات المستخدم
-
-```javascript
+```tsx
 function ThemeSwitcher() {
-  const theme = useSyncCookie('theme');
+    const theme = useSyncCookie<"light" | "dark">("theme");
 
-  const changeTheme = (newTheme) => {
-    setCookie({
-      name: 'theme',
-      value: newTheme,
-      time: 2592000 // 30 يوماً
-    });
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
+    const changeTheme = (newTheme: "light" | "dark") => {
+        setCookie({
+            name: "theme",
+            value: newTheme,
+            time: 60 * 60 * 24 * 30, // 30 يوم
+        });
+        document.documentElement.setAttribute("data-theme", newTheme);
+    };
 
-  return (
-    <button onClick={() => changeTheme('dark')}>
-      الوضع الحالي: {theme || 'فاتح'}
-    </button>
-  );
+    return (
+        <button onClick={() => changeTheme(theme === "dark" ? "light" : "dark")}>
+            {theme === "dark" ? "☀️" : "🌙"}
+        </button>
+    );
 }
 ```
+
+### 🔐 مثال 2: نظام مصادقة بسيط
+
+```tsx
+function AuthSystem() {
+    const [user, setUser] = useState<User | null>(null);
+    const isLoggedIn = useSyncCookie<string>("isLoggedIn");
+
+    useEffect(() => {
+        if (isLoggedIn === "true") {
+            const userData = getCookie<User>("userData");
+            setUser(userData);
+        }
+    }, [isLoggedIn]);
+
+    const login = (userInfo: User) => {
+        setCookie({
+            name: "isLoggedIn",
+            value: "true",
+            time: 3600,
+        });
+        setCookie({
+            name: "userData",
+            value: userInfo,
+            time: 3600,
+        });
+    };
+
+    const logout = () => {
+        delCookie({ name: "isLoggedIn" });
+        delCookie({ name: "userData" });
+        setUser(null);
+    };
+}
+```
+
+### 🌍 مثال 3: تفضيلات اللغة
+
+```tsx
+function LanguageSwitcher() {
+    const language = useSyncCookie<"ar" | "en">("language");
+
+    const changeLanguage = (lang: "ar" | "en") => {
+        setCookie({
+            name: "language",
+            value: lang,
+            time: 60 * 60 * 24 * 365, // سنة
+        });
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    };
+
+    return (
+        <div>
+            <button onClick={() => changeLanguage("ar")}>العربية</button>
+            <button onClick={() => changeLanguage("en")}>English</button>
+        </div>
+    );
+}
+```
+
+---
 
 ## ⚙️ آلية العمل الداخلية
 
-1. **التخزين**: جميع الكوكيز تُخزن في `localStorage` داخل مفتاح واحد `AllLocals`.
-2. **الصلاحية**: يتم التحقق من انتهاء الصلاحية عند كل قراءة باستخدام `getCookie`.
-3. **المزامنة**: تستخدم الأحداث المخصصة `storage_update` و `storage` للتحديث الفوري.
+### 1️⃣ التخزين
 
-## 📊 مقارنة مع التخزين التقليدي
+جميع الكوكيز تُخزّن في `localStorage` تحت مفتاح واحد `AllLocals`:
 
-| الميزة | React-Cookies | Cookies | localStorage |
-|--------|---------------|---------|--------------|
-| صلاحية زمنية | ✅ | ✅ | ❌ |
-| مزامنة بين التبويبات | ✅ | ✅ | ❌ |
-| سعة التخزين | ~5MB | ~4KB | ~5MB |
-| آمن للـ XSS | ✅ | ⚠️ | ✅ |
+```json
+{
+  "version": 1,
+  "data": [
+    {
+      "loc_name": "theme",
+      "loc_value": "dark",
+      "loc_time": 86400,
+      "loc_created_date": "2026-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+**لماذا مفتاح واحد؟**
+
+- ✅ أداء أفضل (قراءة/كتابة واحدة)
+- ✅ لا تعارض مع مفاتيح أخرى
+- ✅ سهولة النسخ الاحتياطي
+
+### 2️⃣ الصلاحية
+
+يتم التحقق عند كل قراءة:
+
+```typescript
+const isExpired = (cookie: CookieEntry): boolean => {
+    const expiryDate = new Date(cookie.loc_created_date);
+    expiryDate.setSeconds(expiryDate.getSeconds() + cookie.loc_time);
+    return new Date() >= expiryDate;
+};
+```
+
+### 3️⃣ المزامنة
+
+يستخدم حدثين:
+
+| الحدث | الغرض |
+|-------|-------|
+| `storage` | تغييرات من تبويبات أخرى |
+| `storage_update` | تغييرات من التبويب الحالي |
+
+---
+
+## 📊 مقارنة
+
+| الميزة | React-Cookies | Cookies | localStorage | sessionStorage |
+|--------|---------------|---------|--------------|----------------|
+| صلاحية زمنية | ✅ | ✅ | ❌ | ✅ |
+| مزامنة بين التبويبات | ✅ | ✅ | ❌ | ❌ |
+| سعة التخزين | ~5MB | ~4KB | ~5MB | ~5MB |
+| TypeScript Types | ✅ | ⚠️ | ❌ | ❌ |
+| React Hook | ✅ | ❌ | ❌ | ❌ |
+| تنظيف تلقائي | ✅ | ✅ | ❌ | ✅ |
+| API بسيط | ✅ | ❌ | ✅ | ✅ |
+
+---
+
+## ⚠️ ملاحظات أمنية
+
+### 🔓 البيانات غير مشفّرة بشكل افتراضي
+
+المكتبة تخزّن البيانات **كنص عادي** في `localStorage`. هذا مناسب لـ:
+
+- ✅ تفضيلات UI (Dark Mode, Language)
+- ✅ حالات غير حساسة
+- ✅ Session tokens (مع تشفير إضافي)
+
+**❌ لا تستخدمها لـ:**
+
+- كلمات المرور
+- بطاقات الائتمان
+- معلومات شخصية حساسة
+
+### 🛡️ كيف تشفّر بنفسك؟
+
+```typescript
+import CryptoJS from "crypto-js";
+
+const KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+// ✅ حفظ مشفّر
+const encrypted = CryptoJS.AES.encrypt(
+    JSON.stringify(userData),
+    KEY
+).toString();
+
+setCookie({
+    name: "user",
+    value: encrypted,
+    time: 3600,
+});
+
+// ✅ قراءة وفك تشفير
+const ciphertext = getCookie<string>("user");
+if (ciphertext) {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, KEY);
+    const userData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+}
+```
+
+**⚠️ تنبيه:** التشفير من جهة العميل **ليس آمنًا 100%** — المفتاح موجود في المتصفح. للبيانات الحساسة، استخدم **Backend** (Supabase Vault أو API).
+
+---
+
+## 🛠️ التطوير
+
+```bash
+# استنساخ
+git clone https://github.com/mqdev1/-react_cookies.git
+
+# تثبيت
+npm install
+
+# تشغيل Dev Server
+npm run dev
+
+# بناء
+npm run build
+```
+
+---
+
+## 📝 Changelog
+
+### v1.0.0 (2026-01-15)
+
+- ✨ إطلاق النسخة الأولى
+- 📝 6 دوال أساسية
+- 🎨 React Hook للمزامنة
+- 💪 TypeScript كامل
+- 🛡️ معالجة الأخطاء
+
+---
 
 ## 🤝 المساهمة
 
-المكتبة مفتوحة المصدر! نرحب بمساهماتكم:
+نرحب بمساهماتكم! اتبع هذي الخطوات:
 
 1. Fork المشروع
-2. أنشئ فرعاً جديداً (`git checkout -b feature/amazing-feature`)
-3. أضف تغييراتك (`git commit -m 'Add some amazing feature'`)
-4. ادفع التغييرات (`git push origin feature/amazing-feature`)
+2. أنشئ فرعاً جديداً:
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. أضف تغييراتك:
+   ```bash
+   git commit -m 'feat: add amazing feature'
+   ```
+4. ادفع:
+   ```bash
+   git push origin feature/amazing-feature
+   ```
 5. افتح Pull Request
 
-## 📝 الترخيص
+### 📋 معايير الكود
+
+- ✅ TypeScript strict mode
+- ✅ تعليقات بالعربية والإنجليزية
+- ✅ اختبارات (قريباً)
+- ✅ Conventional Commits
+
+---
+
+## 📄 الترخيص
 
 هذا المشروع مرخص تحت [MIT License](LICENSE).
 
 ---
 
+<div align="center">
+
 **صنع بـ ❤️ بواسطة [mqdev1](https://github.com/mqdev1)**
 
----
+⭐ إذا أعجبتك المكتبة، لا تنسَ إعطاءها نجمة!
 
-### ⭐ دعم المشروع
+[🐛 الإبلاغ عن مشكلة](https://github.com/mqdev1/-react_cookies/issues) •
+[💡 اقتراح ميزة](https://github.com/mqdev1/-react_cookies/issues) •
+[📖 التوثيق](https://github.com/mqdev1/-react_cookies)
 
-إذا أعجبتك المكتبة، لا تنسى إعطائها نجمة ⭐ على GitHub!
+</div>
