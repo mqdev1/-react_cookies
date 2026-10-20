@@ -1,6 +1,6 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { getCookie, setCookie, delCookie, listCookies } from "./ReactCookie";
+import { getCookie, setCookie, delCookie, listCookies } from "./lib/ReactCookie";
 import { useState } from "react";
 
 function App() {
@@ -14,11 +14,9 @@ function App() {
     });
   };
   const getCok = () => {
-    setCokValue(
-      getCookie({
-        name: "cok1",
-      })
-    );
+    // ✅ getCookie يستقبل string وليس object
+    const value = getCookie("cok1");
+    setCokValue(value === null ? "" : String(value));
   };
   const delCok = () => {
     delCookie({
@@ -50,7 +48,7 @@ function App() {
       </div>
       <div>
         Display Cookie
-        <input value={CokValue} />
+        <input value={CokValue} readOnly />
       </div>
     </header>
   );
